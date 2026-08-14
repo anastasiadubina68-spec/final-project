@@ -1,0 +1,567 @@
+﻿unit WebModuleUnit1;
+
+interface
+
+uses
+  Winapi.ActiveX,
+  System.SysUtils,
+  System.Classes,
+  Web.HTTPApp,
+  Data.Win.ADODB;
+
+type
+  TWebModule1 = class(TWebModule)
+    procedure WebModule1DefaultHandlerAction(
+      Sender: TObject;
+      Request: TWebRequest;
+      Response: TWebResponse;
+      var Handled: Boolean);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  WebModuleClass: TComponentClass = TWebModule1;
+
+implementation
+
+{%CLASSGROUP 'System.Classes.TPersistent'}
+
+{$R *.dfm}
+
+procedure TWebModule1.WebModule1DefaultHandlerAction(
+  Sender: TObject;
+  Request: TWebRequest;
+  Response: TWebResponse;
+  var Handled: Boolean);
+
+var
+  Connection: TADOConnection;
+  Query: TADOQuery;
+  HTML: string;
+
+begin
+
+  Response.ContentType := 'text/html; charset=utf-8';
+
+  Connection := TADOConnection.Create(nil);
+  Query := TADOQuery.Create(nil);
+
+  try
+
+    { ========================================== }
+    { ИНИЦИАЛИЗАЦИЯ COM                          }
+    { ========================================== }
+
+    CoInitialize(nil);
+
+    { ========================================== }
+    { ПОДКЛЮЧЕНИЕ К SQL SERVER                   }
+    { ========================================== }
+
+    Connection.LoginPrompt := False;
+
+    Connection.ConnectionString :=
+      'Provider=SQLOLEDB;' +
+      'Data Source=.\SQLEXPRESS;' +
+      'Initial Catalog=TechShopDB;' +
+      'Integrated Security=SSPI;';
+
+    Connection.Connected := True;
+
+    { ========================================== }
+    { SQL-ЗАПРОС К ТОВАРАМ                       }
+    { ========================================== }
+
+    Query.Connection := Connection;
+
+    Query.SQL.Text :=
+      'SELECT ProductID, ProductName, Price, Description ' +
+      'FROM Products ' +
+      'ORDER BY ProductID';
+
+    Query.Open;
+
+    { ========================================== }
+    { НАЧАЛО HTML-СТРАНИЦЫ                       }
+    { ========================================== }
+
+    HTML :=
+      '<!DOCTYPE html>' +
+      '<html lang="ru">' +
+
+      '<head>' +
+
+      '<meta charset="UTF-8">' +
+
+      '<meta name="viewport" ' +
+      'content="width=device-width, initial-scale=1.0">' +
+
+      '<title>TechShop - интернет-магазин техники</title>' +
+
+      '<style>' +
+
+      '* {' +
+      'box-sizing: border-box;' +
+      '}' +
+
+      'html {' +
+      'scroll-behavior: smooth;' +
+      '}' +
+
+      'body {' +
+      'margin: 0;' +
+      'font-family: Arial, sans-serif;' +
+      'background: #f4f6f8;' +
+      'color: #222;' +
+      '}' +
+
+      'header {' +
+      'background: #111827;' +
+      'color: white;' +
+      'padding: 20px 60px;' +
+      'display: flex;' +
+      'justify-content: space-between;' +
+      'align-items: center;' +
+      'position: sticky;' +
+      'top: 0;' +
+      'z-index: 1000;' +
+      '}' +
+
+      '.logo {' +
+      'font-size: 28px;' +
+      'font-weight: bold;' +
+      '}' +
+
+      'nav {' +
+      'display: flex;' +
+      'gap: 25px;' +
+      '}' +
+
+      'nav a {' +
+      'color: white;' +
+      'text-decoration: none;' +
+      'font-size: 16px;' +
+      '}' +
+
+      'nav a:hover {' +
+      'color: #60a5fa;' +
+      '}' +
+
+      '.hero {' +
+      'background: white;' +
+      'padding: 70px 20px;' +
+      'text-align: center;' +
+      '}' +
+
+      '.hero h1 {' +
+      'font-size: 42px;' +
+      'margin: 0 0 15px 0;' +
+      '}' +
+
+      '.hero p {' +
+      'font-size: 20px;' +
+      'color: #666;' +
+      'margin-bottom: 30px;' +
+      '}' +
+
+      '.hero-button {' +
+      'display: inline-block;' +
+      'background: #2563eb;' +
+      'color: white;' +
+      'padding: 14px 25px;' +
+      'border-radius: 8px;' +
+      'text-decoration: none;' +
+      'font-weight: bold;' +
+      '}' +
+
+      '.hero-button:hover {' +
+      'background: #1d4ed8;' +
+      '}' +
+
+      '.container {' +
+      'max-width: 1100px;' +
+      'margin: 40px auto;' +
+      'padding: 0 20px;' +
+      '}' +
+
+      'h2 {' +
+      'font-size: 28px;' +
+      'margin-bottom: 25px;' +
+      '}' +
+
+      '.categories {' +
+      'display: grid;' +
+      'grid-template-columns: repeat(4, 1fr);' +
+      'gap: 20px;' +
+      '}' +
+
+      '.category {' +
+      'background: white;' +
+      'padding: 25px 15px;' +
+      'border-radius: 10px;' +
+      'text-align: center;' +
+      'box-shadow: 0 2px 8px rgba(0,0,0,0.08);' +
+      '}' +
+
+      '.category h3 {' +
+      'font-size: 19px;' +
+      'margin-top: 0;' +
+      '}' +
+
+      '.category p {' +
+      'color: #666;' +
+      'min-height: 40px;' +
+      '}' +
+
+      '.category-button {' +
+      'display: inline-block;' +
+      'margin-top: 10px;' +
+      'background: #2563eb;' +
+      'color: white;' +
+      'padding: 9px 15px;' +
+      'border-radius: 6px;' +
+      'text-decoration: none;' +
+      '}' +
+
+      '.category-button:hover {' +
+      'background: #1d4ed8;' +
+      '}' +
+
+      '.products {' +
+      'display: grid;' +
+      'grid-template-columns: repeat(3, 1fr);' +
+      'gap: 20px;' +
+      '}' +
+
+      '.product {' +
+      'background: white;' +
+      'padding: 25px;' +
+      'border-radius: 10px;' +
+      'box-shadow: 0 2px 8px rgba(0,0,0,0.08);' +
+      '}' +
+
+      '.product h3 {' +
+      'margin-top: 0;' +
+      'font-size: 20px;' +
+      '}' +
+
+      '.product p {' +
+      'color: #666;' +
+      'line-height: 1.5;' +
+      '}' +
+
+      '.price {' +
+      'font-size: 22px;' +
+      'font-weight: bold;' +
+      'margin: 15px 0;' +
+      'color: #e91e63;' +
+      '}' +
+
+      '.button {' +
+      'display: inline-block;' +
+      'background: #2563eb;' +
+      'color: white;' +
+      'padding: 10px 18px;' +
+      'border-radius: 6px;' +
+      'text-decoration: none;' +
+      '}' +
+
+      '.button:hover {' +
+      'background: #1d4ed8;' +
+      '}' +
+
+      '.contacts {' +
+      'background: white;' +
+      'padding: 30px;' +
+      'border-radius: 10px;' +
+      'margin-top: 40px;' +
+      '}' +
+
+      'footer {' +
+      'margin-top: 50px;' +
+      'background: #111827;' +
+      'color: white;' +
+      'text-align: center;' +
+      'padding: 25px;' +
+      '}' +
+
+      '@media (max-width: 900px) {' +
+
+      '.categories {' +
+      'grid-template-columns: repeat(2, 1fr);' +
+      '}' +
+
+      '.products {' +
+      'grid-template-columns: repeat(2, 1fr);' +
+      '}' +
+
+      'header {' +
+      'padding: 20px;' +
+      '}' +
+
+      '}' +
+
+      '@media (max-width: 600px) {' +
+
+      '.categories {' +
+      'grid-template-columns: 1fr;' +
+      '}' +
+
+      '.products {' +
+      'grid-template-columns: 1fr;' +
+      '}' +
+
+      'nav {' +
+      'gap: 10px;' +
+      '}' +
+
+      '.hero h1 {' +
+      'font-size: 30px;' +
+      '}' +
+
+      '}' +
+
+      '</style>' +
+
+      '</head>' +
+
+      '<body>' +
+
+      { ========================================== }
+      { ШАПКА САЙТА                               }
+      { ========================================== }
+
+      '<header>' +
+
+      '<div class="logo">TechShop</div>' +
+
+      '<nav>' +
+
+      '<a href="#home">Главная</a>' +
+      '<a href="#categories">Категории</a>' +
+      '<a href="#catalog">Каталог</a>' +
+      '<a href="#contacts">Контакты</a>' +
+
+      '</nav>' +
+
+      '</header>' +
+
+      { ========================================== }
+      { ГЛАВНЫЙ ЭКРАН                             }
+      { ========================================== }
+
+      '<section class="hero" id="home">' +
+
+      '<h1>Добро пожаловать в TechShop!</h1>' +
+
+      '<p>' +
+      'Интернет-магазин современной техники' +
+      '</p>' +
+
+      '<a class="hero-button" href="#catalog">' +
+      'Перейти в каталог' +
+      '</a>' +
+
+      '</section>' +
+
+      { ========================================== }
+      { ОСНОВНОЙ КОНТЕЙНЕР                        }
+      { ========================================== }
+
+      '<div class="container">' +
+
+      { ========================================== }
+      { КАТЕГОРИИ                                 }
+      { ВАЖНО: ЭТОТ БЛОК НЕ НАХОДИТСЯ В WHILE    }
+      { ========================================== }
+
+      '<h2 id="categories">Категории товаров</h2>' +
+
+      '<div class="categories">' +
+
+      '<div class="category">' +
+      '<h3>📱 Смартфоны</h3>' +
+      '<p>Современные смартфоны</p>' +
+      '<a class="category-button" href="#catalog">' +
+      'Посмотреть товары' +
+      '</a>' +
+      '</div>' +
+
+      '<div class="category">' +
+      '<h3>💻 Ноутбуки</h3>' +
+      '<p>Ноутбуки для работы и учёбы</p>' +
+      '<a class="category-button" href="#catalog">' +
+      'Посмотреть товары' +
+      '</a>' +
+      '</div>' +
+
+      '<div class="category">' +
+      '<h3>📱 Планшеты</h3>' +
+      '<p>Планшеты для любых задач</p>' +
+      '<a class="category-button" href="#catalog">' +
+      'Посмотреть товары' +
+      '</a>' +
+      '</div>' +
+
+      '<div class="category">' +
+      '<h3>🎧 Наушники</h3>' +
+      '<p>Беспроводные и проводные</p>' +
+      '<a class="category-button" href="#catalog">' +
+      'Посмотреть товары' +
+      '</a>' +
+      '</div>' +
+
+      '</div>' +
+
+      { ========================================== }
+      { КАТАЛОГ                                  }
+      { ========================================== }
+
+      '<h2 id="catalog" style="margin-top:50px;">' +
+      'Каталог товаров' +
+      '</h2>' +
+
+      '<div class="products">';
+
+    { ========================================== }
+    { ВЫВОД ТОВАРОВ ИЗ SQL SERVER                }
+    { ========================================== }
+
+    while not Query.Eof do
+    begin
+
+      HTML := HTML +
+
+        '<div class="product">' +
+
+        '<h3>' +
+        Query.FieldByName('ProductName').AsString +
+        '</h3>' +
+
+        '<p>' +
+        Query.FieldByName('Description').AsString +
+        '</p>' +
+
+        '<div class="price">' +
+
+        FormatFloat(
+          '#,##0',
+          Query.FieldByName('Price').AsFloat
+        ) +
+
+        ' ₸</div>' +
+
+        '<a class="button" href="#contacts">' +
+        'Подробнее' +
+        '</a>' +
+
+        '</div>';
+
+      Query.Next;
+
+    end;
+
+    { ========================================== }
+    { КОНТАКТЫ                                   }
+    { ========================================== }
+
+    HTML := HTML +
+
+      '</div>' +
+
+      '<div class="contacts" id="contacts">' +
+
+      '<h2>Контакты</h2>' +
+
+      '<p><b>TechShop</b></p>' +
+
+      '<p>Интернет-магазин современной техники</p>' +
+
+      '<p>📞 Телефон: +7 (700) 123-45-67</p>' +
+
+      '<p>✉ Email: info@techshop.kz</p>' +
+
+      '<p>📍 Казахстан</p>' +
+
+      '</div>' +
+
+      '</div>' +
+
+      { ========================================== }
+      { ПОДВАЛ                                    }
+      { ========================================== }
+
+      '<footer>' +
+
+      '<p>© 2026 TechShop - интернет-магазин техники</p>' +
+
+      '</footer>' +
+
+      '</body>' +
+
+      '</html>';
+
+    { ========================================== }
+    { ОТПРАВКА HTML                              }
+    { ========================================== }
+
+    Response.Content := HTML;
+
+    Handled := True;
+
+  except
+
+    on E: Exception do
+    begin
+
+      Response.Content :=
+        '<html>' +
+
+        '<head>' +
+        '<meta charset="UTF-8">' +
+        '<title>Ошибка</title>' +
+        '</head>' +
+
+        '<body style="font-family:Arial;padding:40px;">' +
+
+        '<h1>Ошибка подключения к базе данных</h1>' +
+
+        '<p>' +
+        E.Message +
+        '</p>' +
+
+        '<hr>' +
+
+        '<p>' +
+        'Проверьте подключение к SQL Server ' +
+        'и базу TechShopDB.' +
+        '</p>' +
+
+        '</body>' +
+
+        '</html>';
+
+      Handled := True;
+
+    end;
+
+  end;
+
+  { ========================================== }
+  { ОСВОБОЖДЕНИЕ РЕСУРСОВ                      }
+  { ========================================== }
+
+  Query.Close;
+  Query.Free;
+
+  Connection.Close;
+  Connection.Free;
+
+  CoUninitialize;
+
+end;
+
+end.
