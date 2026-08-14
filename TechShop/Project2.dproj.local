@@ -1,9 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<BorlandProject>
-	<Transactions>
-    <Transaction>1899.12.30 00:00:00.000.540,C:\Users\anast\Desktop\lbab\Project2.dproj=C:\TechShop\Project2.dproj</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.251,C:\Users\anast\Desktop\lbab\WebModuleUnit1.dfm=C:\TechShop\WebModuleUnit1.dfm</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.251,C:\Users\anast\Desktop\lbab\WebModuleUnit1.pas=C:\TechShop\WebModuleUnit1.pas</Transaction>
-    <Transaction>1899.12.30 00:00:00.000.012,=C:\Users\anast\Desktop\lbab\WebModuleUnit1.pas</Transaction>
-  </Transactions>
-</BorlandProject>
